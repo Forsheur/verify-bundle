@@ -1,0 +1,21 @@
+verify-bundle
+Copyright 2026 Jean-Yves Leseigneur
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this work except in compliance with the License. You may obtain a copy of
+the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+
+This work distributes no third-party code. verify_bundle.py runs on the Python
+standard library alone; the optional decryption paths import `cryptography` and
+`pynacl` at run time without vendoring them. The Apple and Google attestation
+root certificates embedded in the script are those manufacturers' published
+public certificates, reproduced for pinning, with the URLs they came from in
+the comments beside them.

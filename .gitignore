@@ -1,0 +1,16 @@
+# A bundle is somebody's real recording: video, audio, GPS. Nothing of the sort
+# belongs in a public repository, and an accidental `git add .` inside a working
+# directory where one was unpacked is exactly how it would get there.
+forsheur-evidence-*/
+forsheur-evidence-*.zip
+extracted/
+*.ots
+
+# Output of `--json`, and of running the thing at all.
+edit-report-verify.json
+SHA256SUMS
+
+# Finder's droppings, and Python's.
+.DS_Store
+__pycache__/
+*.pyc

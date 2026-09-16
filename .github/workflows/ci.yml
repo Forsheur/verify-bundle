@@ -1,0 +1,131 @@
+name: ci
+
+# There is nothing to compile. What CI is for here is the two ways a published
+# verifier can quietly become worthless: it stops running on a Python somebody
+# actually has, or it is released under a version number that does not identify
+# its bytes.
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  # The script's whole premise is "Python 3 and nothing else". That premise is
+  # a claim about every Python a reader might have, not about the maintainer's,
+  # so it is tested against the oldest one still in support and the newest.
+  runs:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.9', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # Bytecode-compiles the whole file: a syntax error reaching a release
+      # would mean shipping a verifier that cannot run at all, and that is the
+      # cheapest possible thing to catch.
+      - run: python -m py_compile verify_bundle.py
+      # No third-party import may creep in at module scope. The optional
+      # decryption paths import `cryptography` and `pynacl` inside functions on
+      # purpose; an import that moved to the top would break every machine with
+      # nothing installed, which is precisely the machine this is written for.
+      - name: Imports on a bare interpreter
+        run: python -c "import verify_bundle; print(verify_bundle.VERIFIER_VERSION)"
+      - run: python verify_bundle.py --version
+      # A missing bundle must fail as a usage error, never as a traceback: a
+      # reader who mistypes a path should be told so, not handed a stack dump
+      # they may read as a finding about their evidence.
+      - name: A bad path is a usage error, not a crash
+        shell: bash
+        run: |
+          set +e
+          out=$(python verify_bundle.py ./no-such-bundle 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          [ $code -ne 0 ] || { echo "expected a non-zero exit"; exit 1; }
+          case "$out" in
+            *Traceback*) echo "crashed instead of reporting"; exit 1 ;;
+          esac
+
+  # The version is the only thing that lets a reader map a digest they hold to
+  # a release they can fetch. A tag that disagrees with the file, or a release
+  # with no changelog entry, breaks that mapping silently.
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: The file, the tag and the changelog agree
+        run: |
+          set -eu
+          export LC_ALL=C
+          v=$(sed -n 's/^VERIFIER_VERSION = "\(.*\)"$/\1/p' verify_bundle.py | head -1)
+          [ -n "$v" ] || { echo "no VERIFIER_VERSION in verify_bundle.py"; exit 1; }
+          echo "file declares $v"
+          grep -q "^## \[$v\]" CHANGELOG.md || {
+            echo "CHANGELOG.md has no '## [$v]' section"; exit 1; }
+          case "${GITHUB_REF}" in
+            refs/tags/*)
+              tag="${GITHUB_REF#refs/tags/}"
+              [ "$tag" = "v$v" ] || {
+                echo "tag $tag does not match VERIFIER_VERSION $v"; exit 1; }
+              echo "tag $tag matches" ;;
+          esac
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [runs, version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # create the release
+      id-token: write        # sign the provenance
+      attestations: write    # record it
+    steps:
+      - uses: actions/checkout@v5
+      - name: Collect and hash
+        run: |
+          set -eu
+          export LC_ALL=C
+          mkdir -p out
+          cp verify_bundle.py verify_bundle.cmd verify_bundle.ps1 out/
+          cd out
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+      # Signs "these files were produced by this workflow, from this commit",
+      # into a public transparency log. It says where a file came from. It does
+      # not say the file is honest, and nothing here could.
+      - uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'out/*'
+      # `gh` rather than a third-party action: in a tool meant to be audited,
+      # every action in this file is something a reader has to go and read.
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" out/* \
+            --title "${{ github.ref_name }}" \
+            --notes "$(cat <<'NOTES'
+          `SHA256SUMS` covers every file here.
+
+          This is the release to compare a bundle's own `verify_bundle.py`
+          against. A bundle states the version and digest it carries in its
+          `manifest.json` and `README.txt`; a bundle carrying an **older**
+          version than this one is the ordinary case and not a finding, because
+          bundles keep the verifier that existed when they were made. A copy
+          matching no published release at all is the case worth acting on.
+
+          There is no build step: the published artefact is the source, so the
+          digest above is the whole of the reproducibility story.
+
+          To verify where these files came from:
+
+              gh attestation verify verify_bundle.py --repo ${{ github.repository }}
+          NOTES
+          )"
