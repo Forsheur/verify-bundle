@@ -9,6 +9,19 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.0.1] — 2026-09-20
+
+### Changed
+- The header points readers at `/custody.sha256` instead of `/verifier.sha256`.
+  A Forsheur server used to serve this script at `/verifier` and the picture
+  comparison tool at `/verif` — three letters apart, with the shorter path
+  naming the other tool. The paths now name the question each answers:
+  `/custody` for the chain of custody, `/compare` for the picture. The old
+  paths are gone, not redirected.
+
+Nothing else changed: this release verifies exactly what 1.0.0 verified, and a
+bundle carrying 1.0.0 is not stale for it.
+
 ## [1.0.0] — 2026-09-16
 
 First published release. The script itself is older than this version number;

@@ -65,7 +65,7 @@ wrote, not a signature over a key they chose.
 release here. The script prints its own SHA-256 in its header and emits it in
 `--json`; the bundle's `manifest.json` and `README.txt` state the version and
 digest of the copy they carry; a Forsheur server publishes its embedded copy at
-`/verifier.sha256`. These are three statements from two parties, and a
+`/custody.sha256`. These are three statements from two parties, and a
 substituted script has to be consistent with all of them, including the one
 served by a host the bundle's supplier does not control.
 

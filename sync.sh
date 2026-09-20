@@ -3,7 +3,7 @@
 #
 # The canonical file is `server/verifier/verify_bundle.py`: the server embeds
 # it with `include_str!`, so what a bundle contains and what the server serves
-# at /verifier are the same bytes by construction. This repository is a copy of
+# at /custody are the same bytes by construction. This repository is a copy of
 # that, and a copy is a thing that drifts.
 #
 # The drift that matters is not "these files differ" -- they differ every time
@@ -80,4 +80,7 @@ echo "  1. add a $vu section to CHANGELOG.md"
 echo "  2. commit, then: git tag v$vu && git push --tags"
 echo "  3. CI publishes SHA256SUMS and the provenance attestation"
 echo
-sha256sum verify_bundle.py 2>/dev/null || shasum -a 256 verify_bundle.py
+# Absolute, like every other path here: the digest is the one thing a caller
+# wants out of this script, and it printed an error whenever the script was
+# run from anywhere but this directory.
+sha256sum "$here/verify_bundle.py" 2>/dev/null || shasum -a 256 "$here/verify_bundle.py"
