@@ -9,6 +9,23 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.1.0] — 2026-09-24
+
+### Fixed
+- The App Attest chain is judged at the **attestation**, not at the seal.
+  Apple issues the attestation leaf for a few days only and never renews it,
+  while the key it vouches for keeps signing for months; judged at the seal,
+  every iPhone recording made more than a few days after enrolment failed with
+  "certificate #0 was not valid at the sealing time", all of them genuine. The
+  instant is now the leaf's `notBefore` (set and signed by Apple), and a new
+  check fails if the key was attested **after** the bytes were sealed.
+- A session carrying motion streams no longer crashes the verifier
+  (`NameError: seq`).
+
+### Added
+- Motion streams (`gyro.v1`, `accel.v1`, `mag.v1`, `camera.v1`) are read from
+  the signed envelopes and reported.
+
 ## [1.0.1] — 2026-09-20
 
 ### Changed
