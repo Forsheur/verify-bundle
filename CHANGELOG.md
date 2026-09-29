@@ -9,6 +9,21 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.2.0] — 2026-09-27
+
+### Added
+- **The lower bound is checked.** Every chunk carries, inside its device
+  signature, the notary chain head the phone had last seen. A block hash cannot
+  be known before the block is sealed, so when that `(index, hash)` is a block
+  of the verified chain segment, the chunk was provably signed after it. A new
+  section reports the earliest such bound, fails any chunk that names a block
+  with the wrong hash, and notes a head that goes backwards between chunks.
+  The bound's clock is the notary's seal time, and the report says so.
+- Bundles made by an up-to-date server start the chain segment at the earliest
+  head a chunk claims, usually one block before the first sealing block. With
+  an older bundle the claim falls outside the segment and is reported as not
+  checkable — a note, never a failure.
+
 ## [1.1.0] — 2026-09-24
 
 ### Fixed

@@ -67,7 +67,9 @@ Six links, each one refusing to stand on the one before it:
 4. Leaf → Merkle path → `merkle_root` → `block_hash`, then the notary's Ed25519
    signature over that block.
 5. The hash-chain segment: every block links `prev → next` up to the cover
-   block.
+   block. The chain head each chunk says it had seen (signed inside its
+   envelope) must be a block of that segment, hash for hash: that is the lower
+   bound on when the chunk was signed.
 6. The cover block's Bitcoin anchor (`.ots`), at whichever of three levels your
    machine supports (below).
 
