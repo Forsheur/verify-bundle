@@ -9,6 +9,15 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.2.1] — 2026-10-02
+
+### Fixed
+- A clock reading earlier than 2020 no longer votes in "Clocks the device
+  declared". No real clock in a Forsheur envelope can be that old: a zeroed
+  NTP reply (a rate-limiting server's kiss-o'-death) reads as 1900, or 1970
+  once mis-converted, and scoring it condemned a device clock that was fine.
+  Such a reading is now listed as an invalid reply, not counted.
+
 ## [1.2.0] — 2026-09-27
 
 ### Added
