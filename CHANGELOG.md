@@ -9,6 +9,32 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.3.0] — 2026-10-10
+
+### Added
+- **Notary block format 2: the lower bound no longer rests on the notary's
+  word.** From format 2 on, every notary block commits to the Roughtime
+  responses obtained, just before it was sealed, for a nonce derived from its
+  predecessor's hash. A response is signed at a stated time and could not
+  exist before it, so the block was sealed after `min(MIDP − RADI)` over the
+  responses it contains. The verifier recomputes the block's witness digest
+  from the published packets, checks each signature against the pinned keys
+  (Cloudflare, int08h) and reports "signed after T — timestamped by …,
+  independently of Forsheur". The bound holds as long as one of the servers
+  is honest; a notary can only weaken it, never move it forward. A block
+  without witnesses falls back on the last block before it that has some.
+- The format-2 block hash: `canon([2, index, prev, root, seal_time,
+  witness_digest])`, with `witness_digest = SHA256(0x03 ‖ canon([[source,
+  SHA256(response)], …]))` sorted by source. Format-1 blocks are unchanged, a
+  chain never goes back from 2 to 1, and an unknown format fails rather than
+  being guessed.
+
+### Fixed
+- A lower bound is taken only from a block that verifies (hash, notary
+  signature, chain link and, for the witnessed bound, the witness digest).
+  Before, a block that failed these checks could still lend its claim to the
+  report while the verdict said FAIL.
+
 ## [1.2.1] — 2026-10-02
 
 ### Fixed
