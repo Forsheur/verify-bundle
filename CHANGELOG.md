@@ -30,6 +30,8 @@ release can no longer read.
 ### Note
 - Google shows the verification key only in the developer's Play Console. It
   is pinned in this script and published here; that is the trust it rests on.
+- Pinned: the key of `com.forsheur.app` (production). `com.forsheur.app.dev`
+  (preprod) has no Play Console app, hence no key and no verifiable verdict.
 
 ## [1.3.0] — 2026-10-10
 

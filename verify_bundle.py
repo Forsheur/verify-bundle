@@ -1882,7 +1882,9 @@ def verify_attestation(root, manifest, device_pubs, seal_at, rep, args):
 # them, per Android package. Several per package are allowed for rotation.
 PLAY_INTEGRITY_KEYS = {
     "com.forsheur.app.dev": [],  # preprod
-    "com.forsheur.app": [],      # production
+    "com.forsheur.app": [        # production
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzV2qV1uhlM8zWo8LXZpiPYdLuavIqz5CQo0k2bYgbCG0WAupyiWtu1i/Dt4T3HNWozvJ/aQVvw3+/CQWEw5+Zg==",
+    ],
 }
 
 _P256_SPKI_PREFIX = bytes.fromhex(
