@@ -9,7 +9,7 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
-## [1.4.0] — unreleased
+## [1.4.0] — 2026-10-13
 
 ### Added
 - **Google Play Integrity, checked offline.** When the bundle carries
