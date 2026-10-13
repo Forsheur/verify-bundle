@@ -1776,23 +1776,29 @@ def verify_attestation(root, manifest, device_pubs, seal_at, rep, args):
                 # The instant is the leaf's notBefore — set and signed by
                 # Apple, so still not our clock — and the question the seal
                 # time answers becomes "was the key attested BEFORE these bytes
-                # were sealed".
-                attested_at, _ = _validity(certs[0])
-                if _walk_chain(certs + [apple_root], attested_at, rep,
+                # were sealed". notBefore is NOT the attestation date: Apple
+                # backdates it by about a day, so the report names it for what
+                # it is (the date the certificate is valid from).
+                valid_from, _ = _validity(certs[0])
+                if _walk_chain(certs + [apple_root], valid_from, rep,
                                "App Attest chain", be,
-                               at_what=f"the attestation ({attested_at:%Y-%m-%d %H:%M} UTC)"):
+                               at_what=f"Apple's certificate start date "
+                                       f"({valid_from:%Y-%m-%d %H:%M} UTC; Apple backdates "
+                                       "it by about a day)"):
                     rep.ok(f"App Attest chain: {len(certs)} certificates, rooted in the Apple "
                            "App Attestation Root CA pinned inside this script")
                 if seal_at is not None:
-                    if attested_at <= seal_at:
-                        rep.ok(f"App Attest: the key was attested ({attested_at:%Y-%m-%d}) "
+                    if valid_from <= seal_at:
+                        rep.ok(f"App Attest: Apple's certificate is valid from "
+                               f"{valid_from:%Y-%m-%d} (Apple backdates it by about a day), "
                                f"before these bytes were sealed ({seal_at:%Y-%m-%d}); Apple "
                                "issues short-lived attestation certificates on purpose, so "
                                "their expiry since then is not a verdict")
                     else:
-                        rep.bad(f"App Attest: the key was attested "
-                                f"({attested_at:%Y-%m-%d %H:%M} UTC) AFTER these bytes were "
-                                f"sealed ({seal_at:%Y-%m-%d %H:%M} UTC)")
+                        rep.bad(f"App Attest: Apple's certificate is valid only from "
+                                f"{valid_from:%Y-%m-%d %H:%M} UTC (Apple backdates it by "
+                                f"about a day), AFTER these bytes were sealed "
+                                f"({seal_at:%Y-%m-%d %H:%M} UTC)")
                 aaguid = auth_data[37:53]
                 env = {AAGUID_PROD: "production",
                        AAGUID_DEV: "development (an Xcode build, not the App Store)"}.get(

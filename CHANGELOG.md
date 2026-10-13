@@ -27,6 +27,13 @@ release can no longer read.
   as failures. A device enrolled with its account (`binding: signup`) is noted:
   its nonce also covers the sign-in token, which is not published.
 
+### Fixed
+- **App Attest date one day early.** The report called the leaf certificate's
+  `notBefore` "the attestation". Apple backdates it by about a day, so an
+  enrolment showed up the day before. It is now reported as "Apple's
+  certificate is valid from <date> (Apple backdates it by about a day)". The
+  check itself (valid from before these bytes were sealed) is unchanged.
+
 ### Note
 - Google shows the verification key only in the developer's Play Console. It
   is pinned in this script and published here; that is the trust it rests on.
