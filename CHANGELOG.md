@@ -9,6 +9,28 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
 project uses semantic versioning, where a MAJOR bump means a bundle format this
 release can no longer read.
 
+## [1.4.0] — unreleased
+
+### Added
+- **Google Play Integrity, checked offline.** When the bundle carries
+  `attestation/play_integrity.jws`, the verifier checks Google's ES256
+  signature against the keys pinned in `PLAY_INTEGRITY_KEYS` (per Android
+  package) or supplied with the new `--play-key` option, checks that the
+  verdict's nonce is `SHA-256(nonce ‖ cert_body)` of this certificate (not a
+  replay), that it was issued for the app the bundle names, and that the
+  manifest's summary matches the signed payload. Verdicts are reported as of
+  the phone's registration, with the page's nuance: an install outside the Play
+  Store and a device without `MEETS_DEVICE_INTEGRITY` are notes, never
+  failures. Pure Python: no `cryptography` needed for this step.
+- Withheld, absent, failed, unread (`not_configured`) and unsigned
+  (`server_reported`, `legacy_unverified`) records are reported as notes, never
+  as failures. A device enrolled with its account (`binding: signup`) is noted:
+  its nonce also covers the sign-in token, which is not published.
+
+### Note
+- Google shows the verification key only in the developer's Play Console. It
+  is pinned in this script and published here; that is the trust it rests on.
+
 ## [1.3.0] — 2026-10-10
 
 ### Added

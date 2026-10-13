@@ -152,6 +152,28 @@ python3 verify_bundle.py <bundle> --attest-root google-root.pem
 Walking the chain needs the `cryptography` package. Without it every other
 verdict is unchanged and only the manufacturer link goes unexamined.
 
+### Play Integrity keys
+
+On Android the bundle may carry `attestation/play_integrity.jws`: Google's
+Play Integrity verdict from when the phone **registered** (not when it filmed),
+signed by Google with ES256. The verifier checks that signature with plain
+Python (no `cryptography` needed), checks that the verdict answers this
+certificate's own challenge, and reads the verdicts with the same nuance as the
+page: an app installed outside the Play Store is not evidence against the
+device, and an absent or failed check is not a finding against the recording.
+
+The verification key is the one gap: Google shows it **only in the
+developer's Play Console**, so it cannot be fetched from a Google URL the way
+the attestation roots can. It is pinned in `PLAY_INTEGRITY_KEYS` (one entry per
+package: `com.forsheur.app` in production, `com.forsheur.app.dev` in preprod)
+and published here from 1.4.0 on. A key obtained another way can be added:
+
+```sh
+python3 verify_bundle.py <bundle> --play-key play-integrity-key.pem
+```
+
+`--play-key` accepts PEM, DER, or the base64 the Play Console shows.
+
 ---
 
 ## The `--json` contract
